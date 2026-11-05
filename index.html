@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BreakBits - 10분 상식 스낵</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Inter & Noto Sans KR) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            user-select: none;
+        }
+        /* Hide scrollbars for slick look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Custom animations */
+        @keyframes flipIn {
+            0% { transform: scale(0.95) translateY(10px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        .animate-flip-in {
+            animation: flipIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes stamp {
+            0% { transform: scale(3) rotate(-12deg); opacity: 0; }
+            50% { transform: scale(0.8) rotate(-12deg); opacity: 1; }
+            70% { transform: scale(1.1) rotate(-12deg); }
+            100% { transform: scale(1) rotate(-12deg); opacity: 0.9; }
+        }
+        .animate-stamp {
+            animation: stamp 0.4s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-emerald-100 via-teal-50 to-sky-100 text-slate-800 min-h-screen flex flex-col justify-between items-center p-3 sm:p-5 relative overflow-x-hidden">
+
+    <!-- Top Navigation & Timer Bar -->
+    <header class="w-full max-w-md bg-white/90 backdrop-blur-md rounded-2xl p-4 border border-emerald-200 shadow-lg shadow-emerald-950/5 flex items-center justify-between mb-4 z-20">
+        <div class="flex items-center space-x-2">
+            <div class="bg-gradient-to-tr from-emerald-500 to-teal-400 w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-md">
+                B
+            </div>
+            <div>
+                <h1 class="font-extrabold text-base tracking-tight text-emerald-950 flex items-center gap-1.5">
+                    BreakBits
+                    <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-1.5 py-0.5 rounded border border-emerald-200">쉬는시간 10분</span>
+                </h1>
+                <p class="text-xs text-emerald-600 font-medium">1분 지식 스낵 큐레이션</p>
+            </div>
+        </div>
+
+        <!-- 10분 쉬는시간 타이머 -->
+        <div class="flex items-center bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-1.5 space-x-2">
+            <i class="fa-solid fa-stopwatch text-emerald-600 animate-pulse text-sm"></i>
+            <div class="text-right">
+                <div class="text-[10px] text-emerald-700 font-semibold leading-none">남은 쉬는시간</div>
+                <div id="timer" class="font-mono font-extrabold text-sm text-emerald-900 leading-tight">10:00</div>
+            </div>
+            <button id="resetTimerBtn" title="타이머 리셋" class="text-emerald-500 hover:text-emerald-800 text-xs ml-1 transition">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="w-full max-w-md flex-1 flex flex-col justify-between items-center z-10">
+
+        <!-- Category Selector -->
+        <nav class="w-full mb-4">
+            <div class="flex space-x-2 overflow-x-auto no-scrollbar py-1" id="categoryContainer">
+                <!-- Dynamic categories populated via JS -->
+            </div>
+        </nav>
+
+        <!-- Main Card Component -->
+        <div class="w-full relative flex-1 flex flex-col">
+            <!-- Card Wrapper: 밝은 화이트/민트 톤 카드 -->
+            <div id="cardContainer" class="w-full h-full min-h-[420px] bg-white/95 backdrop-blur-md rounded-3xl p-6 border-2 border-emerald-200/80 shadow-xl shadow-emerald-900/10 flex flex-col justify-between relative overflow-hidden transition-all duration-300">
+                
+                <!-- Category Badge & Read Count -->
+                <div class="flex justify-between items-center z-10">
+                    <span id="cardCategory" class="px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase shadow-sm">
+                        <!-- Category Name -->
+                    </span>
+                    <div class="text-emerald-800 text-xs flex items-center space-x-1 font-semibold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                        <i class="fa-regular fa-clock text-emerald-600"></i>
+                        <span id="readTime">소요시간 1분</span>
+                    </div>
+                </div>
+
+                <!-- Card Content -->
+                <div class="my-auto py-4 z-10 animate-flip-in" id="cardInner">
+                    <div class="text-4xl mb-3 transform hover:scale-110 transition duration-300 inline-block p-3 bg-emerald-50 rounded-2xl border border-emerald-200/60 shadow-sm" id="cardEmoji">💡</div>
+                    <h2 id="cardTitle" class="text-xl sm:text-2xl font-black text-slate-900 mb-3 leading-snug tracking-tight">
+                        <!-- Card Title -->
+                    </h2>
+                    <p id="cardDescription" class="text-slate-600 text-sm sm:text-base leading-relaxed font-normal">
+                        <!-- Card Content -->
+                    </p>
+                    <!-- Key Takeaway Box: 산뜻한 민트 그린 박스 -->
+                    <div id="takeawayBox" class="mt-5 p-3.5 bg-emerald-50/90 rounded-2xl border border-emerald-300/80 text-xs text-emerald-900 flex items-start space-x-2.5 font-medium shadow-inner">
+                        <i class="fa-solid fa-lightbulb text-emerald-600 mt-0.5 text-base"></i>
+                        <span id="cardTakeaway"></span>
+                    </div>
+                </div>
+
+                <!-- Completed Stamp Overlay (Hidden by default) -->
+                <div id="stampOverlay" class="hidden absolute inset-0 bg-white/90 backdrop-blur-[2px] z-20 flex items-center justify-center pointer-events-none">
+                    <div class="border-4 border-emerald-600 text-emerald-700 font-black text-2xl sm:text-3xl px-6 py-3 rounded-2xl tracking-wider uppercase border-dashed animate-stamp bg-emerald-50 shadow-xl">
+                        <i class="fa-solid fa-check-double mr-2 text-emerald-600"></i>습득 완료!
+                    </div>
+                </div>
+
+                <!-- Bottom Action Controls: 진한 에메랄드 메인 버튼 -->
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-between z-10">
+                    <button id="completeBtn" class="flex-1 mr-3 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-extrabold py-3 px-4 rounded-xl shadow-lg shadow-emerald-600/20 transition flex items-center justify-center space-x-2 text-sm">
+                        <i class="fa-solid fa-circle-check text-white"></i>
+                        <span>오늘의 상식 +1 완성</span>
+                    </button>
+                    <button id="bookmarkBtn" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 p-3 rounded-xl transition active:scale-90 border border-emerald-200" title="북마크 저장">
+                        <i class="fa-regular fa-bookmark text-lg" id="bookmarkIcon"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination & Navigation Controls -->
+        <div class="w-full flex items-center justify-between mt-4 px-2">
+            <button id="prevBtn" class="bg-white hover:bg-slate-50 text-emerald-950 font-bold px-4 py-2.5 rounded-xl border border-emerald-200 text-xs flex items-center space-x-2 transition shadow-md disabled:opacity-40 disabled:cursor-not-allowed">
+                <i class="fa-solid fa-chevron-left text-emerald-700"></i>
+                <span>이전</span>
+            </button>
+
+            <!-- Dots Indicator -->
+            <div id="dotsContainer" class="flex space-x-1.5">
+                <!-- Dynamic dots -->
+            </div>
+
+            <button id="nextBtn" class="bg-emerald-800 hover:bg-emerald-900 text-white font-bold px-4 py-2.5 rounded-xl shadow-lg shadow-emerald-900/10 border border-emerald-700 text-xs flex items-center space-x-2 transition active:scale-95">
+                <span>다음 스낵</span>
+                <i class="fa-solid fa-chevron-right text-emerald-300"></i>
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Footer & Progress Stat -->
+    <footer class="w-full max-w-md mt-6 pt-3 border-t border-emerald-900/10 flex items-center justify-between text-xs text-emerald-950 font-medium z-10">
+        <div class="flex items-center space-x-2">
+            <div class="bg-emerald-600 text-white p-1.5 rounded-lg shadow-sm">
+                <i class="fa-solid fa-trophy"></i>
+            </div>
+            <div>
+                <span class="text-emerald-900/80">오늘 읽은 상식:</span>
+                <span id="completedCount" class="font-bold text-emerald-950 ml-1 text-sm">0개</span>
+            </div>
+        </div>
+        <button id="viewSavedBtn" class="text-emerald-800 hover:text-emerald-950 font-bold transition underline underline-offset-4 text-xs">
+            저장한 스낵 보기 (<span id="savedCount" class="font-bold">0</span>)
+        </button>
+    </footer>
+
+    <!-- Saved Modal -->
+    <div id="savedModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white border border-emerald-200 w-full max-w-md rounded-2xl p-5 max-h-[80vh] flex flex-col shadow-2xl">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b border-emerald-100">
+                <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-bookmark text-emerald-600"></i> 저장한 꿀팁 목록
+                </h3>
+                <button id="closeModalBtn" class="text-slate-400 hover:text-slate-700 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div id="savedListContainer" class="flex-1 overflow-y-auto space-y-3 pr-1">
+                <!-- Dynamically populated saved cards -->
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // 1. Data Source: 1-Minute Snack Contents (Bright Green Theme Tags)
+        const snacks = [
+            {
+                id: 1,
+                category: '1분 과학',
+                catColor: 'bg-emerald-100 text-emerald-900 font-extrabold border border-emerald-300',
+                emoji: '🧠',
+                title: '쉬는 시간에 스마트폰을 보면 왜 더 피곤할까?',
+                description: '뇌과학 연구에 따르면 SNS나 숏폼을 볼 때 뇌는 휴식하지 못하고 엄청난 양의 뇌파(베타파)를 소비합니다. 멍하니 창밖을 보거나 눈을 감는 5분이 뇌 활성화에 3배 이상 효과적입니다.',
+                takeaway: '팁: 쉬는시간 첫 3분은 눈을 감고 시각 자극을 차단해 보세요.'
+            },
+            {
+                id: 2,
+                category: '시사/상식',
+                catColor: 'bg-teal-100 text-teal-900 font-extrabold border border-teal-300',
+                emoji: '💰',
+                title: '요즘 자주 들리는 \'생성형 AI\'의 원리는?',
+                description: 'ChatGPT 같은 AI는 다음 단어로 어떤 글자가 오는 것이 가장 자연스러운지 수조 개의 데이터로 확률을 계산하는 \'거대 언어 모델(LLM)\'입니다. 마치 엄청 똑똑한 자동 완성 기능과 같습니다.',
+                takeaway: '핵심: AI는 답을 진짜 아는 것이 아니라 확률상 가장 적절한 말을 합성합니다.'
+            },
+            {
+                id: 3,
+                category: '1분 스트레칭',
+                catColor: 'bg-green-100 text-green-900 font-extrabold border border-green-300',
+                emoji: '🧘',
+                title: '거북목 예방하는 10초 턱 당기기 운동',
+                description: '의자에 바르게 앉아 시선은 정면을 향한 채, 손가락으로 턱을 뒤로 누르듯 밀어 넣어 5초간 유지하세요. 목 뒤쪽 짧아진 근육을 늘려주어 졸음도 날아갑니다.',
+                takeaway: '실천: 지금 바로 턱을 뒤로 집어넣고 5초간 멈춰보세요!'
+            },
+            {
+                id: 4,
+                category: '시험 꿀팁',
+                catColor: 'bg-lime-100 text-lime-900 font-extrabold border border-lime-300',
+                emoji: '📝',
+                title: '벼락치기보다 강력한 \'인터리빙\' 학습법',
+                description: '한 과목만 연속으로 3시간 공부하는 것보다 국어 45분, 수학 45분처럼 과목을 번갈아 학습할 때 뇌의 장기 기억 장치로 전환되는 비율이 40% 이상 상승합니다.',
+                takeaway: '팁: 공부가 안 풀릴 땐 과목을 과감하게 교체해 보세요.'
+            },
+            {
+                id: 5,
+                category: '생활 꿀팁',
+                catColor: 'bg-emerald-100 text-emerald-900 font-extrabold border border-emerald-300',
+                emoji: '☕',
+                title: '카페인 효율을 200% 높이는 \'커피 냅(Coffee Nap)\'',
+                description: '커피나 녹차를 마신 직후 15~20분 동안 짧은 잠을 자면, 깰 때쯤 카페인이 작용함과 동시에 뇌의 피로 물질인 아데노신이 제거되어 극상의 맑은 정신을 얻습니다.',
+                takeaway: '팁: 시험기간 낮잠 전 커피 한 잔이 비밀무기!'
+            }
+        ];
+
+        // Categories list
+        const categories = ['전체', '1분 과학', '시사/상식', '1분 스트레칭', '시험 꿀팁', '생활 꿀팁'];
+
+        // App State
+        let currentCategory = '전체';
+        let filteredSnacks = [...snacks];
+        let currentIndex = 0;
+        let completedIds = new Set();
+        let savedIds = new Set();
+        let timerSeconds = 600; // 10 minutes
+        let timerInterval = null;
+
+        // DOM Elements
+        const cardContainer = document.getElementById('cardContainer');
+        const cardInner = document.getElementById('cardInner');
+        const cardCategory = document.getElementById('cardCategory');
+        const cardEmoji = document.getElementById('cardEmoji');
+        const cardTitle = document.getElementById('cardTitle');
+        const cardDescription = document.getElementById('cardDescription');
+        const cardTakeaway = document.getElementById('cardTakeaway');
+        const stampOverlay = document.getElementById('stampOverlay');
+        const completeBtn = document.getElementById('completeBtn');
+        const bookmarkBtn = document.getElementById('bookmarkBtn');
+        const bookmarkIcon = document.getElementById('bookmarkIcon');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const categoryContainer = document.getElementById('categoryContainer');
+        const dotsContainer = document.getElementById('dotsContainer');
+        const completedCountEl = document.getElementById('completedCount');
+        const savedCountEl = document.getElementById('savedCount');
+        const timerEl = document.getElementById('timer');
+        const resetTimerBtn = document.getElementById('resetTimerBtn');
+        const savedModal = document.getElementById('savedModal');
+        const viewSavedBtn = document.getElementById('viewSavedBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const savedListContainer = document.getElementById('savedListContainer');
+
+        // Initialize App
+        function init() {
+            renderCategoryChips();
+            updateCardContent();
+            startTimer();
+            setupEventListeners();
+        }
+
+        // Render Category Filter Buttons (Bright Theme)
+        function renderCategoryChips() {
+            categoryContainer.innerHTML = '';
+            categories.forEach(cat => {
+                const btn = document.createElement('button');
+                const isActive = cat === currentCategory;
+                btn.className = `px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition shadow-sm ${
+                    isActive 
+                    ? 'bg-emerald-600 text-white shadow-emerald-600/20 border border-emerald-600' 
+                    : 'bg-white text-emerald-900 hover:bg-emerald-50 border border-emerald-200'
+                }`;
+                btn.textContent = cat;
+                btn.addEventListener('click', () => {
+                    currentCategory = cat;
+                    filteredSnacks = cat === '전체' ? [...snacks] : snacks.filter(s => s.category === cat);
+                    currentIndex = 0;
+                    renderCategoryChips();
+                    updateCardContent();
+                });
+                categoryContainer.appendChild(btn);
+            });
+        }
+
+        // Render Pagination Dots
+        function renderDots() {
+            dotsContainer.innerHTML = '';
+            filteredSnacks.forEach((_, idx) => {
+                const dot = document.createElement('div');
+                dot.className = `h-2 rounded-full transition-all duration-300 ${
+                    idx === currentIndex ? 'w-6 bg-emerald-600' : 'w-2 bg-emerald-300/60'
+                }`;
+                dotsContainer.appendChild(dot);
+            });
+        }
+
+        // Update Card UI
+        function updateCardContent() {
+            if (filteredSnacks.length === 0) return;
+
+            const current = filteredSnacks[currentIndex];
+
+            // Re-trigger animation
+            cardInner.classList.remove('animate-flip-in');
+            void cardInner.offsetWidth; // trigger reflow
+            cardInner.classList.add('animate-flip-in');
+
+            // Set Content
+            cardCategory.textContent = current.category;
+            cardCategory.className = `px-3 py-1 rounded-full text-xs font-bold ${current.catColor}`;
+            cardEmoji.textContent = current.emoji;
+            cardTitle.textContent = current.title;
+            cardDescription.textContent = current.description;
+            cardTakeaway.textContent = current.takeaway;
+
+            // Check if already completed
+            if (completedIds.has(current.id)) {
+                stampOverlay.classList.remove('hidden');
+            } else {
+                stampOverlay.classList.add('hidden');
+            }
+
+            // Check Bookmark state
+            if (savedIds.has(current.id)) {
+                bookmarkIcon.className = 'fa-solid fa-bookmark text-lg text-emerald-600';
+            } else {
+                bookmarkIcon.className = 'fa-regular fa-bookmark text-lg text-emerald-600';
+            }
+
+            // Update Navigation Buttons State
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = currentIndex === filteredSnacks.length - 1;
+
+            renderDots();
+        }
+
+        // Timer Logic (10 Minutes Countdown)
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (timerSeconds > 0) {
+                    timerSeconds--;
+                    const mins = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+                    const secs = String(timerSeconds % 60).padStart(2, '0');
+                    timerEl.textContent = `${mins}:${secs}`;
+                } else {
+                    clearInterval(timerInterval);
+                    timerEl.textContent = "00:00";
+                }
+            }, 1000);
+        }
+
+        // Setup Event Listeners
+        function setupEventListeners() {
+            // Next / Prev Navigation
+            nextBtn.addEventListener('click', () => {
+                if (currentIndex < filteredSnacks.length - 1) {
+                    currentIndex++;
+                    updateCardContent();
+                }
+            });
+
+            prevBtn.addEventListener('click', () => {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    updateCardContent();
+                }
+            });
+
+            // Complete (+1 Stamp) Interaction
+            completeBtn.addEventListener('click', () => {
+                const current = filteredSnacks[currentIndex];
+                completedIds.add(current.id);
+                completedCountEl.textContent = `${completedIds.size}개`;
+                stampOverlay.classList.remove('hidden');
+            });
+
+            // Bookmark Toggle
+            bookmarkBtn.addEventListener('click', () => {
+                const current = filteredSnacks[currentIndex];
+                if (savedIds.has(current.id)) {
+                    savedIds.delete(current.id);
+                } else {
+                    savedIds.add(current.id);
+                }
+                savedCountEl.textContent = savedIds.size;
+                updateCardContent();
+            });
+
+            // Reset Timer
+            resetTimerBtn.addEventListener('click', () => {
+                timerSeconds = 600;
+                timerEl.textContent = "10:00";
+                startTimer();
+            });
+
+            // Modal Handlers
+            viewSavedBtn.addEventListener('click', openSavedModal);
+            closeModalBtn.addEventListener('click', () => savedModal.classList.add('hidden'));
+            savedModal.addEventListener('click', (e) => {
+                if (e.target === savedModal) savedModal.classList.add('hidden');
+            });
+        }
+
+        // Render & Open Saved Modal (Bright Light Theme)
+        function openSavedModal() {
+            savedListContainer.innerHTML = '';
+            
+            if (savedIds.size === 0) {
+                savedListContainer.innerHTML = `
+                    <div class="text-center py-8 text-slate-400">
+                        <i class="fa-regular fa-bookmark text-3xl mb-2"></i>
+                        <p class="text-xs">저장된 상식이 없습니다.</p>
+                    </div>
+                `;
+            } else {
+                const savedItems = snacks.filter(item => savedIds.has(item.id));
+                savedItems.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'p-3 rounded-xl bg-slate-50 border border-emerald-100 flex items-start justify-between space-x-2';
+                    div.innerHTML = `
+                        <div class="flex items-start space-x-2.5">
+                            <span class="text-xl p-1 bg-white rounded-lg shadow-sm">${item.emoji}</span>
+                            <div>
+                                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${item.catColor}">${item.category}</span>
+                                <h4 class="font-bold text-slate-800 text-xs mt-1 leading-snug">${item.title}</h4>
+                            </div>
+                        </div>
+                        <button class="remove-saved-btn text-slate-300 hover:text-red-500 transition p-1 text-xs" data-id="${item.id}">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    `;
+                    savedListContainer.appendChild(div);
+                });
+
+                // Attach delete button listeners
+                const removeBtns = savedListContainer.querySelectorAll('.remove-saved-btn');
+                removeBtns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const id = parseInt(e.currentTarget.getAttribute('data-id'));
+                        savedIds.delete(id);
+                        savedCountEl.textContent = savedIds.size;
+                        openSavedModal();
+                        updateCardContent();
+                    });
+                });
+            }
+
+            savedModal.classList.remove('hidden');
+        }
+
+        // Run App on Load
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
